@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -47,23 +48,41 @@ class AuthController extends Controller
     }
 
     public function customerRegister(Request $request) {
+        
+        $data = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
         $user = User::create([
-            'name' => $request->name,
-            'email'=> $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $data['name'],
+            'email'=> $data['email'],
+            'password' => Hash::make($data['password']),
             'role' => 'customer',
         ]);
 
         Auth::login($user);
-        return redirect()->route('customer.dashboard');
+        return redirect()->route('customer.login');
     }
 
-    public function customerDashboard() {
-        return view('customer.dashboard');
+    public function customerDashboard(Request $request) {
+        $query = Product::query();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('name', 'like', "%$search%")
+                  ->orWhere('category', 'like', "%$search%");
+        }
+
+        $products = $query->latest()->paginate(10);
+
+        $products->appends($request->all());
+        return view('customer.dashboard', compact('products'));
     }
 
     public function logout() {
         Auth::logout();
-        return redirect()->route('customer.login'); 
+        return view('welcome'); 
     }
 }
