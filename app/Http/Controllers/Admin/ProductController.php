@@ -5,11 +5,13 @@ namespace App\Http\Controllers\admin;
 use League\Csv\Reader;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Imports\ProductsImport;
 use App\Jobs\ImportProductsJob;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -23,17 +25,17 @@ class ProductController extends Controller
             $products = Product::query();
 
             return DataTables::of($products)
-                    ->addIndexColumn()
-                    ->addColumn('action', function($row){
-                            $btn = '<a href="javascript:void(0)" data-id="'.$row->id.'" class="view btn btn-info btn-sm me-1">View</a>';
-                            $btn .= '<a href="javascript:void(0)" data-id="'.$row->id.'" class="edit btn btn-warning btn-sm me-1">Update</a>';
-                            $btn .= '<a href="javascript:void(0)" data-id="'.$row->id.'" class="delete btn btn-danger btn-sm me-1">Delete</a>';
-                            return $btn;
-                    })
-                    ->rawColumns(['action'])
-                    ->make(true);
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+                    $btn = '<a href="javascript:void(0)" data-id="' . $row->id . '" class="view btn btn-info btn-sm me-1">View</a>';
+                    $btn .= '<a href="javascript:void(0)" data-id="' . $row->id . '" class="edit btn btn-warning btn-sm me-1">Update</a>';
+                    $btn .= '<a href="javascript:void(0)" data-id="' . $row->id . '" class="delete btn btn-danger btn-sm me-1">Delete</a>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
         }
-          
+
         return view('admin.products.index');
     }
 
@@ -112,7 +114,6 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        // if request came from AJAX, return JSON
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -121,7 +122,6 @@ class ProductController extends Controller
             ]);
         }
 
-        // fallback for normal form submit
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
@@ -146,42 +146,21 @@ class ProductController extends Controller
     public function importCsv(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|mimes:csv,txt',
+            'file' => ['required', 'file', 'mimes:csv,xlsx,xls,txt']
         ]);
 
-        $file = $request->file('csv_file');
-        dd($file);
-        if(!$file->isValid()){
-            return response()->json(['message' => 'File upload failed.'], 400);
+        try {
+            Excel::import(new ProductsImport, $request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data imported successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import failed: ' . $e->getMessage()
+            ], 500);
         }
-
-        $path = $file->getRealPath();
-
-        $csv = \League\Csv\Reader::createFromPath($path, 'r');
-        $csv->setHeaderOffset(0);
-        $records = $csv->getRecords();
-
-        $chunkSize = 1000;
-        $chunk = [];
-
-        foreach($records as $record){
-            if(empty($record['image'])){
-                $record['image'] = 'images/default-product.png';
-            }
-
-            $chunk[] = $record;
-
-            if(count($chunk) === $chunkSize){
-                \App\Jobs\ImportProductsJob::dispatch($chunk);
-                $chunk = [];
-            }
-        }
-
-        if(!empty($chunk)){
-            \App\Jobs\ImportProductsJob::dispatch($chunk);
-        }
-
-        return response()->json(['message' => 'Products import started. It will process in the background.']);
     }
-
 }

@@ -80,7 +80,7 @@
 @endsection
 @push('scripts')
 <script type="text/javascript">
-    document.querySelectorAll('.increment').forEach(btn => {
+document.querySelectorAll('.increment').forEach(btn => {
         btn.addEventListener('click', function() {
             let id = this.dataset.id;
             let input = document.querySelector('.quantity[data-id="'+id+'"]');

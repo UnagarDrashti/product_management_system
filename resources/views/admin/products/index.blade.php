@@ -217,7 +217,7 @@
             @csrf
             <div class="mb-3">
                 <label for="csvFile" class="form-label">Select CSV file</label>
-                <input class="form-control" type="file" name="csv_file" id="csvFile" accept=".csv" required>
+                <input class="form-control" type="file" name="file" id="csvFile" accept=".csv" required>
             </div>
             <button type="submit" class="btn btn-primary w-100">Import</button>
         </form>
@@ -247,7 +247,15 @@
                 }},
                 {data: 'price', name: 'price', className: "text-center"},
                 {data: 'image', name: 'image', render: function(data){
-                    return `<img src="/storage/${data}" class="img-thumbnail" style="width:60px; height:60px;">`;
+                  if (data) {
+                      if (data.startsWith('http')) {
+                          return `<img src="${data}" class="img-thumbnail" style="width:60px; height:60px; object-fit:cover;">`;
+                      } else {
+                          return `<img src="/storage/${data}" class="img-thumbnail" style="width:60px; height:60px; object-fit:cover;">`;
+                      }
+                  } else {
+                      return `<img src="{{ asset('/storage/products/default-product.png') }}" class="img-thumbnail" style="width:60px; height:60px; object-fit:cover;">`;
+                  }
                 }},
                 {data: 'category', name: 'category'},
                 {data: 'stock', name: 'stock', className: "text-center"},
@@ -374,6 +382,11 @@
 
       let formData = new FormData(this);
 
+      // Proper way to inspect:
+      for (let [key, value] of formData.entries()) {
+          console.log(key, value);
+      }
+      
       $.ajax({
           url: "{{ route('admin.products.import.csv') }}",
           type: "POST",

@@ -8,7 +8,6 @@
 </head>
 <body class="bg-gray-50 font-sans">
 
-    <!-- Header -->
     <header class="bg-white shadow">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <h1 class="text-3xl font-bold text-gray-800">MyShop</h1>
@@ -19,7 +18,6 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="relative bg-blue-600 text-white">
         <div class="container mx-auto px-6 py-20 text-center">
             <h2 class="text-5xl font-bold mb-4">Discover Amazing Products</h2>
@@ -28,12 +26,11 @@
                 Get Started
             </a>
         </div>
-        <!-- Decorative shapes -->
+        
         <div class="absolute top-0 right-0 w-40 h-40 bg-blue-400 rounded-full opacity-50 -mt-20 -mr-20"></div>
         <div class="absolute bottom-0 left-0 w-40 h-40 bg-blue-400 rounded-full opacity-50 -mb-20 -ml-20"></div>
     </section>
 
-    <!-- Features Section -->
     <section class="py-16">
         <div class="container mx-auto px-6 text-center">
             <h3 class="text-3xl font-bold text-gray-800 mb-12">Why Choose MyShop?</h3>
@@ -57,7 +54,6 @@
         </div>
     </section>
 
-    <!-- Call-to-Action Section -->
     <section class="bg-blue-600 text-white py-16">
         <div class="container mx-auto px-6 text-center">
             <h3 class="text-3xl font-bold mb-4">Ready to Start Shopping?</h3>
@@ -68,7 +64,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-white shadow py-6 mt-12">
         <div class="container mx-auto text-center text-gray-500 text-sm">
             &copy; {{ date('Y') }} MyShop. All rights reserved.

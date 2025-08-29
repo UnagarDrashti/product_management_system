@@ -24,10 +24,15 @@
                         class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-xl transform hover:-translate-y-1 transition duration-300 w-56 flex flex-col">
                         <div class="h-48 w-full bg-gray-100 flex items-center justify-center overflow-hidden relative">
                             @if ($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                    class="object-cover h-14 w-14 transition-transform duration-300 hover:scale-110">
+                                @if (Str::startsWith($product->image, 'http'))
+                                    <img src="{{ $product->image }}" alt="{{ $product->name }}" class="mx-auto"
+                                        style="height:80px; object-fit:contain;">
+                                @else
+                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                                        class="mx-auto" style="height:80px; object-fit:contain;">
+                                @endif
                             @else
-                                <img src="{{ asset('storage/products/default.png') }}" alt="Default Image"
+                                <img src="{{ asset('/storage/products/default-product.png') }}" alt="Default Image"
                                     class="object-cover h-14 w-14 transition-transform duration-300 hover:scale-110">
                             @endif
                             @if ($product->stock <= 0)
@@ -37,7 +42,7 @@
                         </div>
 
                         <div class="flex-1 flex flex-col items-center p-4">
-                            <h3 class="font-semibold text-sm text-gray-800 mt-2 truncate text-center"
+                            <h3 class="font-semibold text-sm text-gray-700 mt-2  text-center"
                                 title="{{ $product->name }}">
                                 {{ $product->name }}
                             </h3>
@@ -47,7 +52,6 @@
                             <p class="text-gray-500 text-xs mt-1">Stock: {{ $product->stock }}</p>
 
                             <button class="add-to-cart bg-blue-600 text-white font-semibold px-4 py-2 mt-3 rounded shadow-md hover:bg-blue-700 transition-colors duration-300 w-full" data-id="{{ $product->id }}">Add to Cart</button>
-
                         </div>
                     </div>
                 @endforeach
@@ -64,38 +68,37 @@
 
 
 @push('scripts')
-<script type="text/javascript">
+    <script type="text/javascript">
+        $(document).ready(function() {
 
-$(document).ready(function(){
+            $('.add-to-cart').on('click', function(e) {
+                e.preventDefault();
 
-    $('.add-to-cart').on('click', function(e){
-        e.preventDefault();
+                let button = $(this);
+                let product_id = button.data('id');
 
-        let button = $(this);
-        let product_id = button.data('id');
+                $.ajax({
+                    url: '/customer/cart/add/' + product_id,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Product added to cart. Total items: ' + response.cart_count);
+                            $('#cart-count').text(response.cart_count);
+                            button.text('Added');
+                            button.prop('disabled', true);
+                            button.addClass('bg-gray-400 cursor-not-allowed');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.log(xhr);
+                        alert('Something went wrong. Please try again.');
+                    }
+                });
+            });
 
-        $.ajax({
-            url: '/customer/cart/add/' + product_id,
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response){
-                if(response.success){
-                    alert('Product added to cart. Total items: ' + response.cart_count);
-                    $('#cart-count').text(response.cart_count);
-                    button.text('Added');
-                    button.prop('disabled', true);
-                    button.addClass('bg-gray-400 cursor-not-allowed');
-                }
-            },
-            error: function(xhr){
-                console.log(xhr);
-                alert('Something went wrong. Please try again.');
-            }
         });
-    });
-
-});
-</script>
+    </script>
 @endpush
