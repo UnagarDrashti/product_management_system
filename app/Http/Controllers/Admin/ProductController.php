@@ -146,11 +146,13 @@ class ProductController extends Controller
     public function importCsv(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,xlsx,xls,txt']
+            'file' => ['required', 'file', 'mimes:csv,xlsx,xls']
         ]);
 
         try {
-            Excel::import(new ProductsImport, $request->file('file'));
+            Excel::queueImport(new ProductsImport, $request->file('file'))
+                ->allOnQueue('imports')
+                ->allOnConnection('database');
 
             return response()->json([
                 'success' => true,

@@ -221,10 +221,7 @@
             </div>
             <button type="submit" class="btn btn-primary w-100">Import</button>
         </form>
-        <small class="text-muted d-block mt-2">
-            CSV columns required: <strong>name, description, price, image, category, stock</strong><br>
-            If the image column is empty, <strong>default.png</strong> will be used.
-        </small>
+        <small class="text-muted d-block mt-2">CSV columns required: <strong>name, description, price, image, category, stock</strong><br></small>
       </div>
     </div>
   </div>
